@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Profile report generated with the `pandas-profiling` Python package">
+    <meta name="author" content="Simon Brugman and the open source community.">
+    <meta name="generator" content="Pandas Profiling v{{ version }}" />
+    <meta name="url" content="https://github.com/pandas-profiling/pandas-profiling">
+    <meta name="date" content="{{ date }}">
+
+    <title>{{ title }}</title>
+    {% include 'wrapper/style.html' %}
+</head>
+
+<body>
+    
+    {% if nav == True %}
+        {% include 'navigation.html' %}
+    {% endif %}
+    
+    {% if tabs | length > 0 %}
+    <div class="row spacing">
+    <ul class="nav nav-tabs" role="tablist">
+            {% for tab in tabs %}
+                <li role="presentation"{% if loop.first %} class="active"{% endif %}>
+                    <a href="#{{ tab.anchor_id }}"
+                       aria-controls="{{ tab.anchor_id }}"
+                       role="tab"
+                       data-toggle="tab">
+                    {{ tab.name }}
+                    </a>
+                </li>
+            {% endfor %}
+            </ul>
+
+        <div class="tab-content">
+            {% for tab in tabs %}
+                <div role="tabpanel"
+                class="tab-pane col-sm-12{% if loop.first %} active{% endif %}" id="{{ tab.anchor_id }}">
+                    {{ tab.render() }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+    
+
+</body>
+</html>
