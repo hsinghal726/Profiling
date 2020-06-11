@@ -37,18 +37,25 @@ class Renderable():
             """
             
             ## template
-            variable_metric_template = templates.template("variable_metric.html")
+            variable_metric_template = templates.template("table_chart.html")
             
             return variable_metric_template.render(df = self.content["dataframe"], image_encoding = self.content["image_encoding"])
         
-        elif (self.type_id == "table_table"):
+        elif (self.type_id == "multiple_tables"):
             """
             content:
+             - size: Int
+             - headings: List
+             - contents: List
             """
             ## template
-            variable_table_template = templates.template("variable_table.html")
+            variable_table_template = templates.template("multiple_tables.html")
             
-            return variable_table_template.render(descriptive_rows = self.content["describe"], inferential_rows = self.content["inference"])
+            return variable_table_template.render(
+                size = self.content["size"],
+                headings = self.content["headings"],
+                contents = self.content["contents"]
+            )
 
         
         elif (self.type_id == "image"):
