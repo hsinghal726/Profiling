@@ -320,3 +320,10 @@ select.multiple{
         border: 0 !important;
     }
 }
+
+.sub_heading {
+    display : flex;
+    align-items : center;
+    justify-content: center;
+    margin-left: 15px; 
+}

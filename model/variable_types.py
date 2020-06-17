@@ -7,7 +7,15 @@ from urllib.parse import ParseResult, urlparse
 import numpy as np
 import pandas as pd
 
-from pandas_profiling.config import config
+
+# Numeric columns will be considered CATEGORICAL if fewer than this many distinct
+max_numeric_distinct_to_be_categorical = 10
+
+# Text columns will be considered TEXT if more than this many distinct (CATEGORICAL otherwise)
+max_text_distinct_to_be_categorical = 101
+
+# Text columns will be considered TEXT if more than this fraction are distinct
+max_text_fraction_distinct_to_be_categorical = 0.33
 
 
 @unique
@@ -25,37 +33,12 @@ class Variable(Enum):
 
     TYPE_DATE = "DATE"
     """A date variable"""
+    
+    TYPE_TEXT = "TEXT"
 
-    TYPE_URL = "URL"
-    """A URL variable"""
-
-    TYPE_COMPLEX = "COMPLEX"
-
-    TYPE_PATH = "PATH"
-    """Absolute path"""
-
-    TYPE_FILE = "FILE"
-    """File (i.e. existing path)"""
-
-    TYPE_IMAGE = "IMAGE"
-    """Images"""
 
     S_TYPE_UNSUPPORTED = "UNSUPPORTED"
     """An unsupported variable"""
-
-
-# Temporary mapping
-Boolean = Variable.TYPE_BOOL
-Real = Variable.TYPE_NUM
-Count = Variable.TYPE_NUM
-Complex = Variable.TYPE_COMPLEX
-Date = Variable.TYPE_DATE
-Categorical = Variable.TYPE_CAT
-Url = Variable.TYPE_URL
-AbsolutePath = Variable.TYPE_PATH
-FilePath = Variable.TYPE_FILE
-ImagePath = Variable.TYPE_IMAGE
-Generic = Variable.S_TYPE_UNSUPPORTED
 
 
 def get_counts(series: pd.Series) -> dict:
@@ -79,6 +62,8 @@ def get_counts(series: pd.Series) -> dict:
         "value_counts_without_nan": value_counts_without_nan,
         "distinct_count_with_nan": distinct_count_with_nan,
         "distinct_count_without_nan": distinct_count_without_nan,
+        "num_rows_with_data": series.count(),
+        "num_rows_total": len(series),        
     }
 
 
@@ -126,85 +111,32 @@ def is_numeric(series: pd.Series, series_description: dict) -> bool:
     """
     return pd.api.types.is_numeric_dtype(series) and (
         series_description["distinct_count_without_nan"]
-        >= config["vars"]["num"]["low_categorical_threshold"].get(int)
+        > max_numeric_distinct_to_be_categorical
         or any(np.inf == s or -np.inf == s for s in series)
     )
 
 
-def is_url(series: pd.Series, series_description: dict) -> bool:
-    """Is the series url type?
-    Args:
-        series: Series
-        series_description: Series description
-    Returns:
-        True is the series is url type (NaNs allowed).
-    """
-
-    def is_url_item(x):
-        return isinstance(x, ParseResult) and all((x.netloc, x.scheme, x.path))
-
-    if series_description["distinct_count_without_nan"] > 0:
-        try:
-            result = series[~series.isnull()].astype(str)
-            return all(is_url_item(urlparse(x)) for x in result)
-        except ValueError:
-            return False
+def is_categorical(series: pd.Series, series_description: dict) -> bool:
+    keys = series_description["value_counts_without_nan"].keys()
+    # TODO: CHECK THIS CASE ACTUALLY WORKS
+    if pd.api.types.is_categorical_dtype(keys):
+        return True
+    elif pd.api.types.is_numeric_dtype(series) and \
+            series_description["distinct_count_without_nan"] \
+            <= max_numeric_distinct_to_be_categorical:
+        return True
     else:
-        return False
-
-
-def is_path(series, series_description) -> bool:
-    """Is the series of the path type (i.e. absolute path)?
-    Args:
-        series: Series
-        series_description: Series description
-    Returns:
-        True is the series is path type (NaNs allowed).
-    """
-    if series_description["distinct_count_without_nan"] == 0:
-        return False
-
-    try:
-        result = series[~series.isnull()].astype(str)
-        return all(os.path.isabs(p) for p in result)
-    except (ValueError, TypeError):
-        return False
-
-
-def is_file(series, series_description) -> bool:
-    """Is the series of the type "file" (i.e. existing paths)?
-    Args:
-        series: Series
-        series_description: Series description
-    Returns:
-        True is the series is of the file type (NaNs allowed).
-    """
-    if series_description["distinct_count_without_nan"] == 0:
-        return False
-
-    try:
-        result = series[~series.isnull()].astype(str)
-        return all(os.path.exists(p) for p in result)
-    except (ValueError, TypeError):
-        return False
-
-
-def is_image(series, series_description) -> bool:
-    """Is the series of the image type (i.e. "file" with image extensions)?
-    Args:
-        series: Series
-        series_description: Series description
-    Returns:
-        True is the series is of the image type (NaNs allowed).
-    """
-    if series_description["distinct_count_without_nan"] > 0:
-        try:
-            result = series[~series.isnull()].astype(str)
-            return all(imghdr.what(p) for p in result)
-        except (TypeError, ValueError):
+        if series_description["num_rows_with_data"] == 0:
             return False
-    else:
-        return False
+        num_distinct = series_description["distinct_count_without_nan"]
+        fraction_distinct = num_distinct / float(series_description["num_rows_with_data"])
+        if fraction_distinct \
+             > max_text_fraction_distinct_to_be_categorical:
+            return False
+        if num_distinct <= max_text_distinct_to_be_categorical:
+            return True
+    return False
+
 
 
 def is_date(series) -> bool:
@@ -249,22 +181,10 @@ def get_var_type(series: pd.Series) -> dict:
             var_type = Variable.TYPE_NUM
         elif is_date(series):
             var_type = Variable.TYPE_DATE
-        elif is_url(series, series_description):
-            var_type = Variable.TYPE_URL
-        elif is_path(series, series_description):
-            if config["vars"]["file"]["active"].get(bool) and is_file(
-                series, series_description
-            ):
-                if config["vars"]["image"]["active"].get(bool) and is_image(
-                    series, series_description
-                ):
-                    var_type = Variable.TYPE_IMAGE
-                else:
-                    var_type = Variable.TYPE_FILE
-            else:
-                var_type = Variable.TYPE_PATH
-        else:
+        elif is_categorical(series, series_description):
             var_type = Variable.TYPE_CAT
+        else:
+            var_type = Variable.TYPE_TEXT
     except TypeError:
         var_type = Variable.S_TYPE_UNSUPPORTED
 
@@ -272,11 +192,15 @@ def get_var_type(series: pd.Series) -> dict:
 
     return series_description
 
-def get_df_col_types(df: pd.DataFrame) -> dict:
+
+
+def get_df_var_types(df: pd.DataFrame) -> dict:
     
-    column_types = {}
+    var_types = {}
     
     for col_i in df.columns:
-        column_types[col_i] = get_var_type(df[col_i])["type"].value
+        var_types[col_i] = get_var_type(df[col_i])["type"].value
     
-    return column_types
+    return var_types
+
+

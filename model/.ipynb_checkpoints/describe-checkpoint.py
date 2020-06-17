@@ -2,8 +2,9 @@ import pandas as pd
 from fds_profiling.model.summary import describe_numeric_1d, describe_categorical
 from fds_profiling.model.summary import get_table_stats
 
-def describe_table(series: pd.Series, column_types):
+def describe_dataframe(series: pd.Series, var_types: dict):
     
+    ## Dataset statistics
     info = get_table_stats(series)
     
     overview = [
@@ -15,13 +16,14 @@ def describe_table(series: pd.Series, column_types):
     ]
     
     
-    column_types_lst = [type_ for col_i, type_ in column_types.items()]
-    variable_types_dict = dict((i, column_types_lst.count(i)) for i in column_types_lst)
+    ## Variable types
+    var_types_lst = [type_ for var, type_ in var_types.items()]
+    var_types_count = dict((i, var_types_lst.count(i)) for i in var_types_lst)
     
     variable_types = []
-    for type_, count in sorted(variable_types_dict.items()):
+    for type_, count_ in sorted(var_types_count.items()):
         variable_types.append(
-            { "name": type_, "value": count, "alert": False},
+            { "name": type_, "value": count_, "alert": False},
         )
 
     return [overview, variable_types]
@@ -33,10 +35,11 @@ def describe_series(series: pd.Series, column_type):
         info = describe_numeric_1d(series)
     
         descriptive = [
-            { "name": "Distinct count", "value": info["distinct_count"], "alert": False},
+            { "name": "Values", "value": str(info["n_values"]) + ' (' + str(info["p_values"]) + '%)', "alert": False },
             { "name": "Missing", "value": str(info["n_missing"]) + ' (' + str(info["p_missing"]) + '%)', "alert": False },
-            { "name": "Min - Max", "value": str(info["min"]) + ' - ' + str(info["max"]), "alert": False },
-            { "name": "Zeros", "value": str(info["n_zeros"]) + ' (' + str(info["p_zeros"]) + '%)', "alert": False }
+            { "name": "Distinct count", "value": info["distinct_count"], "alert": False},
+            { "name": "Zeros", "value": str(info["n_zeros"]) + ' (' + str(info["p_zeros"]) + '%)', "alert": False },
+            { "name": "Min - Max", "value": str(info["min"]) + ' - ' + str(info["max"]), "alert": False }
         ]
 
         variability = [
@@ -44,7 +47,7 @@ def describe_series(series: pd.Series, column_type):
             { "name": "Interquartile range (IQR)", "value": info["iqr"], "alert": False },
             { "name": "Variance", "value": info["variance"], "alert": False },
             { "name": "Standard deviation", "value": info["std"], "alert": False },
-            { "name": "Median Absolute Deviation (MAD)", "value": info["std"], "alert": False }
+            { "name": "Median Absolute Deviation (MAD)", "value": info["mad"], "alert": False }
         ]
 
         moments = [
@@ -55,20 +58,32 @@ def describe_series(series: pd.Series, column_type):
         ]
 
         outlier = [
-            { "name": "Outlier", "value": str(info["n_outlier"]) + ' (' + str(info["p_outlier"]) + '%)', "alert": False },
-            { "name": "Outlier above", "value": str(info["n_outlier_above"]) + ' (' + str(info["p_outlier_above"]) + '%)', "alert": False },
-            { "name": "Outlier below", "value": str(info["n_outlier_below"]) + ' (' + str(info["p_outlier_below"]) + '%)', "alert": False }
+            { "name": "Outliers", "value": str(info["n_outlier"]) + ' (' + str(info["p_outlier"]) + '%)', "alert": False },
+            { "name": "Top outliers", "value": str(info["n_outlier_top"]) + ' (' + str(info["p_outlier_top"]) + '%)', "alert": False },
+            { "name": "Bottom outliers", "value": str(info["n_outlier_bottom"]) + ' (' + str(info["p_outlier_bottom"]) + '%)', "alert": False }
+        ]
+        
+        quantile = [
+            { "name": "Minimum", "value": info["min"], "alert": False },
+            { "name": "5%", "value": info["5%"], "alert": False },
+            { "name": "Q1", "value": info["25%"], "alert": False },
+            { "name": "Median", "value": info["50%"], "alert": False },
+            { "name": "Q3", "value": info["75%"], "alert": False },
+            { "name": "95%", "value": info["95%"], "alert": False },
+            { "name": "Maximum", "value": info["max"], "alert": False }
+            
         ]
     
-        return [descriptive, variability, moments, outlier]
+        return [descriptive, variability, moments, outlier, quantile]
     
     elif (column_type != "NUM"):
         
         info = describe_categorical(series)
-    
+        
         descriptive = [
-            { "name": "Distinct count", "value": info["distinct_count"], "alert": False},
+            { "name": "Values", "value": str(info["n_values"]) + ' (' + str(info["p_values"]) + '%)', "alert": False },
             { "name": "Missing", "value": str(info["n_missing"]) + ' (' + str(info["p_missing"]) + '%)', "alert": False },
+            { "name": "Distinct count", "value": info["distinct_count"], "alert": False},
             { "name": "Mode", "value": info["mode"], "alert": False }
         ]
     

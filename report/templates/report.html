@@ -29,9 +29,13 @@
                     <h1 class="page-header">{{ section.name }}</h1>
                 </div>
                 <div class="section-items">
-                    <div class="row spacing">
+                    {% if section.name != "Variables" %}
+                        <div class="row spacing">
+                            {{ html }}
+                        </div>
+                    {% else %}
                         {{ html }}
-                    </div>
+                    {% endif %}
                 </div>
                 {% endif %}
             {% endfor %}
