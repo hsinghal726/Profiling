@@ -12,7 +12,7 @@ def describe_dataframe(series: pd.Series, var_types: dict):
         { "name": "Number of observations", "value": info["n"], "alert": False },
         { "name": "Missing cells", "value": str(info["n_cells_missing"]) + ' (' + str(info["p_cells_missing"]) + '%)', "alert": False },
         { "name": "Duplicate rows", "value": str(info["n_duplicated"]) + ' (' + str(info["p_duplicated"]) + '%)', "alert": False },
-        { "name": "Key columns", "value": "-", "alert": False }
+#         { "name": "Key columns", "value": "-", "alert": False }
     ]
     
     

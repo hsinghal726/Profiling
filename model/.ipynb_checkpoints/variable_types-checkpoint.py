@@ -35,6 +35,8 @@ class Variable(Enum):
     """A date variable"""
     
     TYPE_TEXT = "TEXT"
+    
+    TYPE_CONS = "CONSTANT"
 
 
     S_TYPE_UNSUPPORTED = "UNSUPPORTED"
@@ -175,6 +177,9 @@ def get_var_type(series: pd.Series) -> dict:
         if series_description["distinct_count_without_nan"] == 0:
             # Empty
             var_type = Variable.S_TYPE_UNSUPPORTED
+        elif series_description["distinct_count_without_nan"] == 1:
+            # Empty
+            var_type = Variable.TYPE_CONS
         elif is_boolean(series, series_description):
             var_type = Variable.TYPE_BOOL
         elif is_numeric(series, series_description):

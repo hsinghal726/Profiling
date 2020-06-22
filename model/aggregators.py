@@ -3,12 +3,16 @@ import pandas as pd
 
 def groupby_aggregator(dataframe, categorical_col, metrics):
     
-    metrics_df = pd.DataFrame()
+    metrics_df = pd.DataFrame(dataframe[categorical_col].value_counts(normalize=True).mul(100).round(1)).rename(columns={categorical_col:"Count Percent(%)"}).rename_axis(categorical_col).reset_index()
     
     for metric_name, metric_func in metrics:
         metric_df = dataframe.groupby(categorical_col).apply(metric_func).reset_index(name=metric_name)
         
-        metrics_df = pd.merge(metric_df, metrics_df, how="outer") if metrics_df.shape[0]!=0 else metric_df
+        metrics_df = pd.merge(metric_df, metrics_df, how="outer", on=categorical_col) if metrics_df.shape[0]!=0 else metric_df
+        
+        
+    ## reordering
+    metrics_df = metrics_df[[categorical_col] + [metric_i[0] for metric_i in metrics] + ["Count Percent(%)"]]
 
     return metrics_df.set_index(categorical_col)
 

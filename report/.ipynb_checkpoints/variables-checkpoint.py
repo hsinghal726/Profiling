@@ -28,7 +28,7 @@ def variables_html(dataframe, var_types, metrics, anchor_id, target_variable, as
                 metrics,
                 anchor_id,
                 target_variable,
-                var_types[target_variable],
+                var_types,
                 associations_df)
             
             
@@ -39,7 +39,7 @@ def variables_html(dataframe, var_types, metrics, anchor_id, target_variable, as
                 metrics,
                 anchor_id,
                 target_variable,
-                var_types[target_variable],
+                var_types,
                 associations_df)
             
         else:
@@ -56,16 +56,18 @@ def variables_html(dataframe, var_types, metrics, anchor_id, target_variable, as
                     anchor_id = anchor_id + var_i + "statistics",
                     type_id = "multiple_tables"))
             
-            ## case 2: wordcloud
-            wordcloud_encoding = wordcloud(dataframe[var_i])
+            if (var_type == "TEXT"):
             
-            tabs.append(
-                renderable.Renderable(
-                    content = {"image_encoding": wordcloud_encoding},
-                    name = "Word cloud",
-                    anchor_id = anchor_id + var_i + "wordcloud",
-                    type_id = "image"))
-        
+                ## case 2: wordcloud
+                wordcloud_encoding = wordcloud(dataframe[var_i])
+
+                tabs.append(
+                    renderable.Renderable(
+                        content = {"image_encoding": wordcloud_encoding},
+                        name = "Word cloud",
+                        anchor_id = anchor_id + var_i + "wordcloud",
+                        type_id = "image"))
+
         
         html += nav_table_template.render(tabs = tabs, anchor_id = anchor_id, header=var_i, sub_heading=var_type)
         

@@ -6,7 +6,10 @@ from fds_profiling.model.describe import describe_series
 
 
 
-def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, target_var_type, assn_df):
+def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, var_types, assn_df):
+    
+    if (target_var != None):
+        target_var_type = var_types[target_var]
     
     tabs = []
     
@@ -22,9 +25,14 @@ def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, targ
     
             
     # 2ND TAB - associations
-    cont_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "CAT-NUM")].head(5)
-    parent_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "CAT-CAT")].head(5)
-    child_assn = assn_df[(assn_df["col_b"] == col_name) & (assn_df["type_"] == "CAT-CAT")].head(5)
+    cont_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "CAT-NUM")]
+    cont_assn = cont_assn[cont_assn['association'] >= 0.01].head(5)
+    
+    parent_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "CAT-CAT")]
+    parent_assn = parent_assn[parent_assn['association'] >= 0.01].head(5)
+    
+    child_assn = assn_df[(assn_df["col_b"] == col_name) & (assn_df["type_"] == "CAT-CAT")]
+    child_assn = child_assn[child_assn['association'] >= 0.01].head(5)
 
     table_cont_assn = convert_df_to_table(cont_assn, "col_b", "association")
     table_parent_assn = convert_df_to_table(parent_assn, "col_b", "association")
@@ -34,7 +42,7 @@ def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, targ
         renderable.Renderable(
             content = {
                 "size": 4,
-                "headings": ["Numerical", "Categorical(Parent)", "Categorical(Child)"],
+                "headings": ["Numerical", "Categorical (Can be inferred from)", "Categorical (Can be inferred about)"],
                 "contents": [table_cont_assn, table_parent_assn, table_child_assn]
             },
             name = "Associations",
@@ -84,7 +92,7 @@ def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, targ
         
         
     ## case 2: target column - CAT (100% stack chart)
-    if ((target_var != None) and (target_var != col_name) and (target_var_type == "CAT")):
+    if ((target_var != None) and (target_var != col_name) and (target_var_type in ["CAT", "BOOL"])):
         
         stackbarchart_encoding = stackbarchart(df[[col_name, target_var]], col_name, target_var)
         tabs.append(
@@ -106,7 +114,7 @@ def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, targ
             
             ## a. table: sorting and re-ordering
             temp_df = agg_df.sort_values(metric_i[0], ascending=False).head(5)
-            temp_df = temp_df[[metric_i[0]] + [col for col in temp_df if col != metric_i[0]]]
+#             temp_df = temp_df[[metric_i[0]] + [col for col in temp_df if col != metric_i[0]]]
             
             ## b. bar chart:
             barchart_encoding = barchart(temp_df, metric_i[0])

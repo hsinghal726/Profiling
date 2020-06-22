@@ -7,7 +7,11 @@ from fds_profiling.model.describe import describe_series
 from fds_profiling.model.associations import associations
 
 
-def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, target_var_type, assn_df):
+def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, var_types, assn_df):
+    
+    if (target_var != None):
+        target_var_type = var_types[target_var]
+    
     
     tabs = []
         
@@ -26,10 +30,11 @@ def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, targe
             
     ## 2ND TAB - associations
     num_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "NUM-NUM")]
-    pos_num_assn = num_assn[num_assn['association'] > 0].head(5)
-    neg_num_assn = num_assn[num_assn['association'] < 0].sort_values('association').head(5)
+    pos_num_assn = num_assn[num_assn['association'] >= 0.01].head(5)
+    neg_num_assn = num_assn[num_assn['association'] <= -1*0.01].sort_values('association').head(5)
 
-    cat_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "NUM-CAT")].head(5)
+    cat_assn = assn_df[(assn_df["col_a"] == col_name) & (assn_df["type_"] == "NUM-CAT")]
+    cat_assn = cat_assn[cat_assn["association"] > 0.01].head(5)
 
     table_pos_num_assn = convert_df_to_table(pos_num_assn, "col_b", "association")
     table_neg_num_assn = convert_df_to_table(neg_num_assn, "col_b", "association")
@@ -52,7 +57,7 @@ def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, targe
     quantile_df = describe_df[-1]
             
     ## b. Histogram
-    histogram_encoding = histogram(df[col_name])
+    histogram_encoding = histogram(df[col_name], col_name)
     
     tabs.append(
         renderable.Renderable(
@@ -64,7 +69,7 @@ def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, targe
     # 4TH TAB - target variable
             
     ## case 1: target column - CAT (bar chart)
-    if ((target_var != None) and (target_var != col_name) and (target_var_type == "CAT")):
+    if ((target_var != None) and (target_var != col_name) and (target_var_type in ["CAT", "BOOL"])):
         
         ## a. table
         target_df = df[[col_name, target_var]]
@@ -74,6 +79,9 @@ def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, targe
             top_categories = list(mean_df[target_var][0:9])
             target_df.loc[~target_df[col_name].isin(top_categories), col_name] = "Others"
             mean_df = target_df.groupby(col_name, as_index=False)[target_var].mean().sort_values(target_var, ascending=False)
+        
+        ## renaming column
+        mean_df.rename(columns={col_name:col_name + " (mean)"}, inplace=True)
        
         ## b. boxplot
         boxplot_encoding = boxplot(df[[col_name, target_var]], cat=target_var, num=col_name)

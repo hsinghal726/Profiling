@@ -84,8 +84,6 @@ def networkplot(column_types, associations):
 
     plt.axis('off') 
     plt.tight_layout()
-    
-#     plt.subplots_adjust(left=0.1, right=0.9, top=0.7, bottom=0.2)
     return plot_360_n0sc0pe(plt)
     
     

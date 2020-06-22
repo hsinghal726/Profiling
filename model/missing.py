@@ -7,6 +7,7 @@ sns.set_style("darkgrid")
 from missingno import missingno
 
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 
 from fds_profiling.visualisation.image_encoding import hex_to_rgb, plot_360_n0sc0pe
 
@@ -31,6 +32,7 @@ def missing_matrix(data: pd.DataFrame) -> str:
 
 
 def missing_count_column_wise(df):
+    rcParams['figure.figsize'] = 10, 4
 
     dataframe = df
 
@@ -48,18 +50,19 @@ def missing_count_column_wise(df):
     ## bar plot
     sns.set_style("darkgrid")
     ## plot 1 - "total" - (top) series
-    sns.barplot(x=missing_column_df.index, y="values", data=missing_column_df, color="#337ab7", label="A")
+    sns.barplot(x=missing_column_df.index, y="values", data=missing_column_df, color="#337ab7", label="Values")
 
     ## plot 2 - overlay - "bottom" series
-    sns.barplot(x=missing_column_df.index, y="Missing values", data=missing_column_df, color="red", label="B")
+    sns.barplot(x=missing_column_df.index, y="Missing values", data=missing_column_df, color="red", label="Missing")
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.xticks(rotation="90")
-    plt.subplots_adjust(left=0.1, right=0.9, top=0.7, bottom=0.2)
+    plt.ylabel('(%)', fontsize='12')
+    plt.title("Missing values % in each column",weight="bold").set_fontsize('12')
     plt.tight_layout()
     return plot_360_n0sc0pe(plt)
 
-
 def missing_count_row_wise(df):
+    rcParams['figure.figsize'] = 10, 4
 
     dataframe = df
 
@@ -79,8 +82,11 @@ def missing_count_row_wise(df):
     missing_row_df.sort_values("index", ascending=False, inplace=True)
     
     sns.barplot(x="Number of rows", y="Missing cells %", data=missing_row_df, orient="h", color="#337ab7")
-    plt.subplots_adjust(left=0.1, right=0.9, top=0.7, bottom=0.2)
-    plt.tight_layout()
+    
+    plt.xlabel('Number of rows', fontsize='12')
+    plt.ylabel('Number of missing cells', fontsize='12')
+#     plt.title("Missing values % in each column",weight="bold", fontsize='15')
+    plt.tight_layout(rect=(0.1, 0, 0.9, 1))
     return plot_360_n0sc0pe(plt)
     
     

@@ -271,7 +271,7 @@ a.anchor-pos-variable{
 #sample-container, #duplicate-container{
     overflow: auto;
     width: 100%;
-    max-height:250px;
+    max-height:320px;
     overflow-y:auto;
 }
 

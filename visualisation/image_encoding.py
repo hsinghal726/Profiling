@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Tuple, Union
 from urllib.parse import quote
 
-from pandas_profiling.config import config
+from fds_profiling.config import config
 
 
 def hex_to_rgb(hex: str) -> Tuple[float, ...]:
@@ -47,11 +47,11 @@ def plot_360_n0sc0pe(plt, image_format: Union[str, None] = None, attempts=0) -> 
     """
 
     if image_format is None:
-        image_format = config["plot"]["image_format"].get(str)
+        image_format = "svg"
     if image_format not in ["svg", "png"]:
         raise ValueError('Can only 360 n0sc0pe "png" or "svg" format.')
 
-    inline = config["html"]["inline"].get(bool)
+    inline = True
 
     mime_types = {"png": "image/png", "svg": "image/svg+xml"}
 
@@ -65,14 +65,14 @@ def plot_360_n0sc0pe(plt, image_format: Union[str, None] = None, attempts=0) -> 
             else:
                 image_bytes = BytesIO()
                 plt.savefig(
-                    image_bytes, dpi=config["plot"]["dpi"].get(int), format=image_format
+                    image_bytes, dpi=800, format=image_format
                 )
                 image_bytes.seek(0)
                 result_string = base64_image(
                     image_bytes.getvalue(), mime_types[image_format]
                 )
         else:
-            file_path = Path(config["html"]["file_name"].get(str))
+            file_path = Path(None)
             suffix = f"_assets/images/{uuid.uuid4().hex}.{image_format}"
             args = {
                 "fname": f"{file_path.with_suffix('')}{suffix}",
@@ -80,7 +80,7 @@ def plot_360_n0sc0pe(plt, image_format: Union[str, None] = None, attempts=0) -> 
             }
 
             if image_format == "png":
-                args["dpi"] = config["plot"]["dpi"].get(int)
+                args["dpi"] = 800
 
             plt.savefig(**args)
             result_string = f"{file_path.stem}{suffix}"
