@@ -24,17 +24,21 @@ class Renderable():
              - metrics     : list(metrics)
              
             """
-            return variables_html(self.content["dataframe"], self.content["column_types"], self.content["metrics"], self.anchor_id)
+            return variables_html(
+                self.content["dataframe"],
+                self.content["column_types"],
+                self.content["metrics"],
+                self.anchor_id, self.content["target_variable"],self.content["associations_df"])
         
         elif (self.type_id == "missing_container"):
-            """
-            content:
-             - column_types: dict(column_name, column_type)
-             - dataframe   : pandas dataframe
-             - metrics     : list(metrics)
-             
-            """
             return missing_html(self.content["dataframe"], self.anchor_id)
+        
+        elif (self.type_id == "interactions_container"):
+            
+            ## template
+            select_template = templates.template("select.html")
+            
+            return select_template.render(tabs=self.content["tabs"])
             
         
         elif (self.type_id == "table_chart"):
@@ -64,7 +68,10 @@ class Renderable():
             ## template
             variable_metric_template = templates.template("dataframe_chart.html")
             
-            return variable_metric_template.render(df = self.content["dataframe"], image_encoding = self.content["image_encoding"])
+            return variable_metric_template.render(df = self.content["dataframe"],
+                                                   image_encoding = self.content["image_encoding"],
+                                                   df_size = self.content["df_size"],
+                                                   img_size = self.content["img_size"],)
         
         elif (self.type_id == "multiple_tables"):
             """
@@ -90,6 +97,10 @@ class Renderable():
 #             df = self.content["dataframe"]
 #             html_df = df.to_html(classes='table table-condensed stats freq table-hover table-striped')
 #             return html_df
+        
+        elif (self.type_id == "dataframe"):
+            return self.content["dataframe"].to_html(classes='table table-condensed stats table-hover table-striped')
+            return "Hello"
         
             
         else:

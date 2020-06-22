@@ -12,10 +12,10 @@ import pandas as pd
 max_numeric_distinct_to_be_categorical = 10
 
 # Text columns will be considered TEXT if more than this many distinct (CATEGORICAL otherwise)
-max_text_distinct_to_be_categorical = 101
+max_text_distinct_to_be_categorical = 101 ## 101
 
 # Text columns will be considered TEXT if more than this fraction are distinct
-max_text_fraction_distinct_to_be_categorical = 0.33
+max_text_fraction_distinct_to_be_categorical = 0.3 ## .33
 
 
 @unique

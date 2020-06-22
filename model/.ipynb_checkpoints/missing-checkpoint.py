@@ -55,6 +55,7 @@ def missing_count_column_wise(df):
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.xticks(rotation="90")
     plt.subplots_adjust(left=0.1, right=0.9, top=0.7, bottom=0.2)
+    plt.tight_layout()
     return plot_360_n0sc0pe(plt)
 
 
@@ -79,6 +80,7 @@ def missing_count_row_wise(df):
     
     sns.barplot(x="Number of rows", y="Missing cells %", data=missing_row_df, orient="h", color="#337ab7")
     plt.subplots_adjust(left=0.1, right=0.9, top=0.7, bottom=0.2)
+    plt.tight_layout()
     return plot_360_n0sc0pe(plt)
     
     

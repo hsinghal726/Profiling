@@ -9,7 +9,7 @@ class Config(object):
 
     def __init__(self):
         
-        with open("config_harsh.yaml") as file:
+        with open("config_default.yaml") as file:
             self.config = yaml.load(file, Loader=yaml.FullLoader)
         
     def set(self, key, value):

@@ -3,7 +3,7 @@ import jinja2
 
 # Initializing Jinja
 package_loader = jinja2.PackageLoader(
-    "fds_profiling", "report/templates"
+    "fds_profiling", "report/templates_structure"
 )
 jinja2_env = jinja2.Environment(lstrip_blocks=True, trim_blocks=True, loader=package_loader)
 
