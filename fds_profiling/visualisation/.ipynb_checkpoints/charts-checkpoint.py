@@ -31,11 +31,13 @@ def barchart(dataframe, numerical_column, is_percent=False):
     if (is_percent):
         ## removing the % sign
 #         dataframe[numerical_column] = dataframe[numerical_column].str.rstrip('%').astype('float')
-        sns.barplot(x=numerical_column, y=dataframe.index, data=dataframe, orient="h", order=dataframe.index, color="#337ab7")
+#         sns.barplot(x=numerical_column, y=dataframe.index, data=dataframe, orient="h", order=dataframe.index, color="#337ab7")
+        dataframe.sort_values(numerical_column, ascending=True)[numerical_column].plot.barh(color="#337ab7")
 #         plt.barh(dataframe.index.values, dataframe[numerical_column])
         plt.xlim(0, 100)
     else:
-        sns.barplot(x=numerical_column, y=dataframe.index, data=dataframe, orient="h", order=dataframe.index, color="#337ab7")
+#         sns.barplot(x=numerical_column, y=dataframe.index, data=dataframe, orient="h", order=dataframe.index, color="#337ab7")
+        dataframe.sort_values(numerical_column, ascending=True)[numerical_column].plot.barh(color="#337ab7")
 #     df.plot.barh()
 #     plt.subplots_adjust(left=0.1, right=0.9, top=0.7, bottom=0.2)
 

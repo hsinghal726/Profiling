@@ -7,7 +7,7 @@ from fds_profiling.model.describe import describe_series
 
 
 def categorical_variable_html(df, col_name, metrics, anchor_id, target_var, var_types, assn_df):
-    
+        
     if (target_var != None):
         target_var_type = var_types[target_var]
     

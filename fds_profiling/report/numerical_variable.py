@@ -77,8 +77,8 @@ def continuous_variable_html(df, col_name, metrics, anchor_id, target_var, var_t
 
         if (mean_df.shape[0] > 10):
             top_categories = list(mean_df[target_var][0:9])
-            target_df.loc[~target_df[col_name].isin(top_categories), col_name] = "Others"
-            mean_df = target_df.groupby(col_name, as_index=False)[target_var].mean().sort_values(target_var, ascending=False)
+            target_df.loc[~target_df[target_var].isin(top_categories), target_var] = "Others"
+            mean_df = target_df.groupby(target_var, as_index=False)[col_name].mean().sort_values(col_name, ascending=False)
         
         ## renaming column
         mean_df.rename(columns={col_name:col_name + " (mean)"}, inplace=True)

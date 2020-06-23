@@ -11,7 +11,7 @@ class Renderable():
     def __init__(self, content, name, anchor_id, type_id):
         self.content = content
         self.name = name
-        self.anchor_id = anchor_id
+        self.anchor_id = str(hash(anchor_id)) ## In HTML, ID should not contain some characters, therefore using hash
         self.type_id = type_id
         
     def render(self):
